@@ -4,6 +4,17 @@
 
 MolVis molecule generator module — de novo candidate generation with multi-engine scoring.
 
+## Standalone app
+
+```bash
+npm install
+npm run dev
+```
+
+Local app: `http://127.0.0.1:5175`
+
+The standalone app opens directly to the generator. No sign-in flow is included.
+
 ## Documentation
 
 Full module documentation (interface, usage, extension guide, limitations):
@@ -14,6 +25,7 @@ Full module documentation (interface, usage, extension guide, limitations):
 
 ```
 client/   React UI (GenerationPage, forms, cards, artifacts)
+src/      Standalone Vite app wrapper and local service shims
 server/   FastAPI routes, Pydantic models, generation engines
 docs/     Module documentation
 ```

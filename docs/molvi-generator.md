@@ -128,7 +128,7 @@ All engines implement `GenerationEngine.generate(request, on_progress)` in `serv
 
 | Dependency | Used for |
 |------------|----------|
-| `@/services/api` | Authenticated HTTP client |
+| `@/services/api` | Optional host HTTP client |
 | `@/store/workspace`, `@/store/molecule` | Workspace state on `GenerationPage` |
 | `@/components/shared/TaskProgress`, `VirtualGrid` | UI on `GenerationPage` |
 | `@/features/artifacts/artifactRendererRegistry` | Artifact rendering registration in host |
