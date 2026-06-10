@@ -151,15 +151,17 @@ const cardSx = (selected?: boolean) => ({
   minWidth: 0,
   display: 'flex',
   flexDirection: 'column',
-  p: 1.2,
-  border: selected ? '1px solid rgba(49, 93, 255, 0.55)' : '1px solid rgba(20, 32, 51, 0.08)',
-  borderRadius: 0.75,
+  p: 1.4,
+  border: selected ? '1px solid rgba(41, 88, 255, 0.62)' : '1px solid rgba(20, 32, 51, 0.1)',
+  borderRadius: 1.5,
   bgcolor: selected ? '#f5f8ff' : '#ffffff',
   cursor: 'pointer',
   transition: 'all 0.2s ease',
+  boxShadow: selected ? '0 12px 30px rgba(41, 88, 255, 0.14)' : '0 8px 24px rgba(20, 32, 51, 0.06)',
   '&:hover': {
     borderColor: 'rgba(49, 93, 255, 0.3)',
-    boxShadow: '0 4px 16px rgba(49, 93, 255, 0.08)',
+    boxShadow: '0 14px 34px rgba(49, 93, 255, 0.12)',
+    transform: 'translateY(-1px)',
   }
 });
 
@@ -174,11 +176,11 @@ const svgContainerSx = {
   height: 170,
   display: 'grid',
   placeItems: 'center',
-  bgcolor: '#ffffff',
-  borderRadius: 0.5,
+  bgcolor: '#f8fafc',
+  borderRadius: 1,
   mb: 1,
   overflow: 'hidden',
-  border: '1px solid rgba(20, 32, 51, 0.06)',
+  border: '1px solid rgba(20, 32, 51, 0.08)',
 } as const;
 
 const svgSx = {
@@ -225,7 +227,13 @@ const bodySx = {
 const metricsGridSx = {
   display: 'grid',
   gridTemplateColumns: 'repeat(3, 1fr)',
-  gap: 0.5,
+  gap: 0.65,
+  '& > div': {
+    p: 0.85,
+    borderRadius: 1,
+    bgcolor: '#f8fafc',
+    border: '1px solid rgba(20, 32, 51, 0.06)',
+  },
 } as const;
 
 const metricLabelSx = {
@@ -258,6 +266,7 @@ const buttonSx = {
   fontSize: '0.72rem',
   fontWeight: 900,
   textTransform: 'none',
+  borderRadius: 1,
   border: '1px solid rgba(49, 93, 255, 0.3)',
   bgcolor: '#ffffff',
   '&:hover': { bgcolor: '#f0f4ff', borderColor: 'rgba(49, 93, 255, 0.5)' },

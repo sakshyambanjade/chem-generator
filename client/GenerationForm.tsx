@@ -1,9 +1,11 @@
 import { useState } from 'react';
-import { Box, Button, IconButton, MenuItem, Paper, Select, Stack, TextField, Typography, Slider, Chip, LinearProgress, Tooltip } from '@mui/material';
+import { Box, Button, FormControlLabel, IconButton, MenuItem, Paper, Select, Stack, Switch, TextField, Typography, Slider, Chip, LinearProgress, Tooltip } from '@mui/material';
 import DeleteOutlineIcon from '@mui/icons-material/DeleteOutline';
 import AddIcon from '@mui/icons-material/Add';
 import CloudUploadIcon from '@mui/icons-material/CloudUpload';
 import HelpOutlineIcon from '@mui/icons-material/HelpOutline';
+import PlayArrowRoundedIcon from '@mui/icons-material/PlayArrowRounded';
+import TuneRoundedIcon from '@mui/icons-material/TuneRounded';
 import api from '@/services/api';
 
 export type PropertyObjective = 'maximize' | 'minimize' | 'target';
@@ -142,13 +144,18 @@ export function GenerationForm({ onStartGeneration }: GenerationFormProps) {
   };
 
   return (
-    <Paper sx={{ p: 3, maxWidth: 800, mx: 'auto' }}>
-      <Typography variant="h6" fontWeight="bold" gutterBottom>Generation Conditions</Typography>
+    <Paper elevation={0} sx={formShellSx}>
+      <Stack direction="row" spacing={1.4} alignItems="center" sx={{ mb: 2.5 }}>
+        <Box sx={sectionIconSx}>
+          <TuneRoundedIcon />
+        </Box>
+        <Box>
+          <Typography variant="h5" sx={formTitleSx}>Generation Conditions</Typography>
+          <Typography variant="body2" sx={{ color: 'var(--molvis-muted)' }}>Set objectives, engines, and molecular constraints.</Typography>
+        </Box>
+      </Stack>
       
-      <Stack direction="row" spacing={1} flexWrap="wrap" useFlexGap sx={{ mb: 3, mt: 1 }}>
-        <Typography variant="caption" color="text.secondary" sx={{ alignSelf: 'center', mr: 0.5 }}>
-          Try a preset goal:
-        </Typography>
+      <Stack direction="row" spacing={1} flexWrap="wrap" useFlexGap sx={{ mb: 3 }}>
         {PRESETS.map((preset) => (
           <Chip 
             key={preset.label} 
@@ -168,21 +175,21 @@ export function GenerationForm({ onStartGeneration }: GenerationFormProps) {
             variant="outlined"
             size="small"
             color="primary"
-            sx={{ cursor: 'pointer' }}
+            sx={presetChipSx}
           />
         ))}
       </Stack>
 
-      <Box sx={{ mb: 4 }}>
-        <Typography variant="subtitle2" color="text.secondary" gutterBottom>Desired Properties</Typography>
+      <Box sx={sectionSx}>
+        <Typography sx={sectionTitleSx}>Desired Properties</Typography>
         <Stack spacing={2}>
           {conditions.map((cond) => (
-            <Stack key={cond.id} direction="row" spacing={2} alignItems="center">
+            <Box key={cond.id} sx={conditionRowSx}>
               <Select
                 size="small"
                 value={cond.property}
                 onChange={(e) => handleConditionChange(cond.id, 'property', e.target.value)}
-                sx={{ minWidth: 150 }}
+                sx={fieldSx}
               >
                 {AVAILABLE_PROPERTIES.map(p => (
                   <MenuItem key={p.value} value={p.value}>{p.label}</MenuItem>
@@ -193,7 +200,7 @@ export function GenerationForm({ onStartGeneration }: GenerationFormProps) {
                 size="small"
                 value={cond.objective}
                 onChange={(e) => handleConditionChange(cond.id, 'objective', e.target.value)}
-                sx={{ minWidth: 120 }}
+                sx={fieldSx}
               >
                 <MenuItem value="maximize">Maximize</MenuItem>
                 <MenuItem value="minimize">Minimize</MenuItem>
@@ -207,7 +214,7 @@ export function GenerationForm({ onStartGeneration }: GenerationFormProps) {
                   placeholder="Target Value"
                   value={cond.targetValue || ''}
                   onChange={(e) => handleConditionChange(cond.id, 'targetValue', parseFloat(e.target.value))}
-                  sx={{ width: 100 }}
+                  sx={fieldSx}
                 />
               )}
 
@@ -217,23 +224,23 @@ export function GenerationForm({ onStartGeneration }: GenerationFormProps) {
                 label="Weight"
                 value={cond.weight}
                 onChange={(e) => handleConditionChange(cond.id, 'weight', parseFloat(e.target.value))}
-                sx={{ width: 80 }}
+                sx={{ ...fieldSx, minWidth: 96 }}
               />
 
-              <IconButton color="error" onClick={() => handleRemoveCondition(cond.id)}>
+              <IconButton color="error" onClick={() => handleRemoveCondition(cond.id)} sx={{ justifySelf: { xs: 'end', sm: 'center' } }}>
                 <DeleteOutlineIcon />
               </IconButton>
-            </Stack>
+            </Box>
           ))}
-          <Button startIcon={<AddIcon />} variant="text" onClick={handleAddCondition} sx={{ alignSelf: 'flex-start' }}>
+          <Button startIcon={<AddIcon />} variant="outlined" onClick={handleAddCondition} sx={addButtonSx}>
             Add Property
           </Button>
         </Stack>
       </Box>
 
-      <Box sx={{ mb: 4 }}>
-        <Typography variant="subtitle2" color="text.secondary" gutterBottom>Generation Settings</Typography>
-        <Stack direction="row" spacing={3}>
+      <Box sx={sectionSx}>
+        <Typography sx={sectionTitleSx}>Generation Settings</Typography>
+        <Box sx={settingsGridSx}>
           <TextField
             size="small"
             type="number"
@@ -260,7 +267,7 @@ export function GenerationForm({ onStartGeneration }: GenerationFormProps) {
             size="small"
             value={settings.engine}
             onChange={(e) => setSettings({ ...settings, engine: e.target.value as any })}
-            sx={{ minWidth: 160 }}
+            sx={fieldSx}
           >
             <MenuItem value="molvis_graph">MolVis Graph</MenuItem>
             <MenuItem value="molvis_chem_ge">ChemGE (Coupled)</MenuItem>
@@ -269,16 +276,17 @@ export function GenerationForm({ onStartGeneration }: GenerationFormProps) {
             size="small"
             value={settings.startSource}
             onChange={(e) => setSettings({ ...settings, startSource: e.target.value as any })}
+            sx={fieldSx}
           >
             <MenuItem value="random">Random Start</MenuItem>
             <MenuItem value="upload">Upload Molecule File</MenuItem>
             <MenuItem value="drawn">Use Drawn Molecule</MenuItem>
           </Select>
-        </Stack>
+        </Box>
       </Box>
 
       {settings.engine === 'molvis_chem_ge' && (
-        <Box sx={{ mb: 4, p: 2, bgcolor: '#f5f8ff', borderRadius: 1, border: '1px solid rgba(49, 93, 255, 0.15)' }}>
+        <Box sx={highlightSectionSx}>
           <Typography variant="subtitle2" color="primary" fontWeight="bold" gutterBottom>
             Synthesizability Coupling Weight
           </Typography>
@@ -303,7 +311,7 @@ export function GenerationForm({ onStartGeneration }: GenerationFormProps) {
       )}
 
       {/* Custom Building Block Stock Upload */}
-      <Box sx={{ mb: 4, p: 2, bgcolor: '#fafafa', borderRadius: 1, border: '1px solid rgba(0, 0, 0, 0.06)' }}>
+      <Box sx={uploadSx}>
         <Typography variant="subtitle2" sx={{ fontWeight: 'bold', mb: 0.5, display: 'flex', alignItems: 'center' }}>
           Custom Building Block Stock
           <Tooltip title="Upload your own catalog of purchasable building blocks. Routes and generation will be restricted to these compounds.">
@@ -313,13 +321,14 @@ export function GenerationForm({ onStartGeneration }: GenerationFormProps) {
         <Typography variant="caption" color="text.secondary" display="block" sx={{ mb: 2 }}>
           Upload a custom CSV/text file containing starting materials (first column as SMILES) available in your lab.
         </Typography>
-        <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.2, flexWrap: 'wrap' }}>
           <Button
             variant="outlined"
             component="label"
             startIcon={<CloudUploadIcon />}
             disabled={uploadStatus === 'uploading'}
             size="small"
+            sx={uploadButtonSx}
           >
             {uploadStatus === 'uploading' ? 'Uploading...' : 'Upload CSV/SDF'}
             <input
@@ -378,10 +387,10 @@ export function GenerationForm({ onStartGeneration }: GenerationFormProps) {
         </Box>
       </Box>
 
-      <Box sx={{ mb: 4 }}>
-        <Typography variant="subtitle2" color="text.secondary" gutterBottom>Advanced Constraints</Typography>
+      <Box sx={sectionSx}>
+        <Typography sx={sectionTitleSx}>Advanced Constraints</Typography>
         <Stack spacing={2}>
-          <Stack direction="row" spacing={3}>
+          <Box sx={constraintsGridSx}>
             <TextField
               size="small"
               type="number"
@@ -405,26 +414,28 @@ export function GenerationForm({ onStartGeneration }: GenerationFormProps) {
               onChange={(e) => setSettings({ ...settings, forbiddenSubstructure: e.target.value })}
               sx={{ flex: 1 }}
             />
-          </Stack>
-          <Stack direction="row" spacing={3}>
-            <label style={{ display: 'flex', alignItems: 'center', fontSize: '0.9rem' }}>
-              <input 
-                type="checkbox" 
-                checked={settings.keepValidOnly} 
-                onChange={(e) => setSettings({ ...settings, keepValidOnly: e.target.checked })}
-                style={{ marginRight: 8 }}
-              />
-              Keep valid molecules only
-            </label>
-            <label style={{ display: 'flex', alignItems: 'center', fontSize: '0.9rem' }}>
-              <input 
-                type="checkbox" 
-                checked={settings.autoDeduplicate} 
-                onChange={(e) => setSettings({ ...settings, autoDeduplicate: e.target.checked })}
-                style={{ marginRight: 8 }}
-              />
-              Auto-deduplicate
-            </label>
+          </Box>
+          <Stack direction={{ xs: 'column', sm: 'row' }} spacing={1.2}>
+            <FormControlLabel
+              sx={switchLabelSx}
+              control={
+                <Switch
+                  checked={settings.keepValidOnly}
+                  onChange={(e) => setSettings({ ...settings, keepValidOnly: e.target.checked })}
+                />
+              }
+              label="Keep valid molecules only"
+            />
+            <FormControlLabel
+              sx={switchLabelSx}
+              control={
+                <Switch
+                  checked={settings.autoDeduplicate}
+                  onChange={(e) => setSettings({ ...settings, autoDeduplicate: e.target.checked })}
+                />
+              }
+              label="Auto-deduplicate"
+            />
           </Stack>
         </Stack>
       </Box>
@@ -434,6 +445,7 @@ export function GenerationForm({ onStartGeneration }: GenerationFormProps) {
           variant="contained" 
           color="primary" 
           size="large"
+          startIcon={<PlayArrowRoundedIcon />}
           onClick={() => onStartGeneration(conditions, {
             ...settings,
             customStockId: stockLibraryFile ? 'custom' : undefined
@@ -445,3 +457,129 @@ export function GenerationForm({ onStartGeneration }: GenerationFormProps) {
     </Paper>
   );
 }
+
+const formShellSx = {
+  p: { xs: 2, md: 3 },
+  width: '100%',
+  maxWidth: 860,
+  justifySelf: 'center',
+  border: '1px solid var(--molvis-border-soft)',
+  borderRadius: 2,
+  bgcolor: 'rgba(255, 255, 255, 0.9)',
+  boxShadow: 'var(--molvis-shadow)',
+} as const;
+
+const formTitleSx = {
+  color: 'var(--molvis-text)',
+  fontWeight: 950,
+  lineHeight: 1.1,
+} as const;
+
+const sectionIconSx = {
+  width: 44,
+  height: 44,
+  display: 'grid',
+  placeItems: 'center',
+  borderRadius: 1.5,
+  bgcolor: 'rgba(41, 88, 255, 0.1)',
+  color: 'var(--molvis-accent)',
+  flex: '0 0 auto',
+} as const;
+
+const presetChipSx = {
+  cursor: 'pointer',
+  height: 32,
+  borderRadius: 1.2,
+  bgcolor: '#fff',
+  fontWeight: 800,
+  '&:hover': { bgcolor: '#f4f7ff' },
+} as const;
+
+const sectionSx = {
+  mb: 3,
+  p: { xs: 1.5, md: 2 },
+  border: '1px solid var(--molvis-border-soft)',
+  borderRadius: 1.5,
+  bgcolor: 'var(--molvis-surface-soft)',
+} as const;
+
+const sectionTitleSx = {
+  color: 'var(--molvis-text)',
+  fontSize: '0.78rem',
+  fontWeight: 950,
+  textTransform: 'uppercase',
+  mb: 1.5,
+} as const;
+
+const conditionRowSx = {
+  display: 'grid',
+  gridTemplateColumns: {
+    xs: '1fr',
+    sm: 'minmax(140px, 1fr) minmax(130px, 0.8fr) minmax(90px, 0.45fr) auto',
+  },
+  gap: 1.2,
+  alignItems: 'center',
+} as const;
+
+const settingsGridSx = {
+  display: 'grid',
+  gridTemplateColumns: { xs: '1fr', sm: 'repeat(2, minmax(0, 1fr))', xl: 'repeat(5, minmax(0, 1fr))' },
+  gap: 1.4,
+} as const;
+
+const constraintsGridSx = {
+  display: 'grid',
+  gridTemplateColumns: { xs: '1fr', md: '0.7fr 1fr 1fr' },
+  gap: 1.4,
+} as const;
+
+const fieldSx = {
+  minWidth: 0,
+  width: '100%',
+  bgcolor: '#fff',
+} as const;
+
+const addButtonSx = {
+  alignSelf: 'flex-start',
+  textTransform: 'none',
+  fontWeight: 850,
+  borderRadius: 1.2,
+  bgcolor: '#fff',
+} as const;
+
+const highlightSectionSx = {
+  mb: 3,
+  p: 2,
+  bgcolor: '#f4f7ff',
+  borderRadius: 1.5,
+  border: '1px solid rgba(41, 88, 255, 0.16)',
+} as const;
+
+const uploadSx = {
+  mb: 3,
+  p: 2,
+  bgcolor: '#fbfcfe',
+  borderRadius: 1.5,
+  border: '1px solid var(--molvis-border-soft)',
+} as const;
+
+const uploadButtonSx = {
+  textTransform: 'none',
+  fontWeight: 850,
+  borderRadius: 1.2,
+  bgcolor: '#fff',
+} as const;
+
+const switchLabelSx = {
+  m: 0,
+  px: 1.25,
+  py: 0.75,
+  border: '1px solid var(--molvis-border-soft)',
+  borderRadius: 1.25,
+  bgcolor: '#fff',
+  '& .MuiFormControlLabel-label': {
+    color: 'var(--molvis-text)',
+    fontSize: '0.92rem',
+    fontWeight: 750,
+  },
+} as const;

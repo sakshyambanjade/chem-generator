@@ -1,5 +1,9 @@
 import { useMemo, useState } from 'react';
-import { Box, Button, Stack, Typography } from '@mui/material';
+import { Box, Button, Chip, LinearProgress, Stack, Typography } from '@mui/material';
+import AutoAwesomeRoundedIcon from '@mui/icons-material/AutoAwesomeRounded';
+import BoltRoundedIcon from '@mui/icons-material/BoltRounded';
+import ClearRoundedIcon from '@mui/icons-material/ClearRounded';
+import ScienceRoundedIcon from '@mui/icons-material/ScienceRounded';
 
 import { GenerationForm } from '../client/GenerationForm';
 import type { GenerationCondition, GenerationSettings } from '../client/GenerationForm';
@@ -41,46 +45,201 @@ export function App() {
   }
 
   return (
-    <Box sx={{ minHeight: '100dvh', bgcolor: 'var(--molvis-bg)', p: { xs: 1.2, md: 2.5 } }}>
-      <Stack spacing={2}>
-        <Box>
-          <Typography variant="h5" sx={{ fontWeight: 800, color: 'var(--molvis-text)' }}>
-            Chem Generator
-          </Typography>
-          <Typography variant="body2" sx={{ color: 'var(--molvis-muted)' }}>
-            Standalone molecule generation workspace
-          </Typography>
+    <Box sx={{ minHeight: '100dvh', p: { xs: 2, md: 3 } }}>
+      <Stack spacing={2.5} sx={{ width: '100%', maxWidth: 1380, mx: 'auto' }}>
+        <Box sx={heroSx}>
+          <Box>
+            <Stack direction="row" spacing={1} alignItems="center" flexWrap="wrap" useFlexGap sx={{ mb: 1 }}>
+              <Chip size="small" icon={<BoltRoundedIcon />} label={running ? 'Running' : `${results.length || baseCandidates.length} sample candidates`} sx={heroChipSx} />
+            </Stack>
+            <Typography variant="h3" sx={titleSx}>
+              Chem Generator
+            </Typography>
+          </Box>
+          <Box sx={heroStatsSx}>
+            <Box>
+              <Typography sx={statValueSx}>{results.length || '-'}</Typography>
+              <Typography sx={statLabelSx}>Candidates</Typography>
+            </Box>
+            <Box>
+              <Typography sx={statValueSx}>3</Typography>
+              <Typography sx={statLabelSx}>Presets</Typography>
+            </Box>
+            <Box>
+              <Typography sx={statValueSx}>2</Typography>
+              <Typography sx={statLabelSx}>Engines</Typography>
+            </Box>
+          </Box>
         </Box>
 
-        <GenerationForm onStartGeneration={startGeneration} />
+        <Box sx={workspaceGridSx}>
+          <GenerationForm onStartGeneration={startGeneration} />
 
-        <Stack direction="row" alignItems="center" justifyContent="space-between">
-          <Typography variant="h6" sx={{ color: 'var(--molvis-text)', fontWeight: 800 }}>
-            Candidates
-          </Typography>
-          <Button size="small" onClick={() => setResults([])} disabled={!results.length}>
-            Clear
-          </Button>
-        </Stack>
+          <Box sx={resultsPanelSx}>
+            <Stack direction="row" alignItems="flex-start" justifyContent="space-between" spacing={2} sx={{ mb: 2 }}>
+              <Box>
+                <Typography variant="h6" sx={{ color: 'var(--molvis-text)', fontWeight: 900, lineHeight: 1.15 }}>
+                  Candidates
+                </Typography>
+                <Typography variant="body2" sx={{ color: 'var(--molvis-muted)', mt: 0.35 }}>
+                  Ranked molecules appear here after generation.
+                </Typography>
+              </Box>
+              <Button
+                size="small"
+                variant="outlined"
+                startIcon={<ClearRoundedIcon />}
+                onClick={() => setResults([])}
+                disabled={!results.length}
+                sx={{ textTransform: 'none', fontWeight: 800, borderRadius: 1.5 }}
+              >
+                Clear
+              </Button>
+            </Stack>
 
-        {running ? (
-          <Box sx={{ p: 3, bgcolor: '#fff', border: '1px solid var(--molvis-border-soft)', borderRadius: 1 }}>
-            <Typography>Generating candidates...</Typography>
+            {running ? (
+              <Box sx={runningSx}>
+                <Stack direction="row" spacing={1.2} alignItems="center">
+                  <AutoAwesomeRoundedIcon color="primary" />
+                  <Box sx={{ flex: 1 }}>
+                    <Typography sx={{ fontWeight: 900, color: 'var(--molvis-text)' }}>Generating candidates</Typography>
+                    <LinearProgress sx={{ mt: 1, borderRadius: 99 }} />
+                  </Box>
+                </Stack>
+              </Box>
+            ) : null}
+
+            {!running && !decoratedResults.length ? (
+              <Box sx={emptySx}>
+                <ScienceRoundedIcon sx={{ fontSize: 34, color: 'var(--molvis-accent)' }} />
+                <Typography sx={{ fontWeight: 900, color: 'var(--molvis-text)', mt: 1 }}>No candidates yet</Typography>
+                <Typography sx={{ color: 'var(--molvis-muted)', maxWidth: 320, mx: 'auto', mt: 0.5 }}>
+                  Start a generation run or choose a preset goal to populate this review panel.
+                </Typography>
+              </Box>
+            ) : null}
+
+            <Box sx={cardsGridSx}>
+              {decoratedResults.map((candidate) => (
+                <GeneratedMoleculeCard
+                  key={candidate.smiles}
+                  candidate={candidate}
+                  selected={selected === candidate.smiles}
+                  onSelect={(next) => setSelected(next.smiles)}
+                  onCommand={() => undefined}
+                />
+              ))}
+            </Box>
           </Box>
-        ) : null}
-
-        <Box sx={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))', gap: 1.2 }}>
-          {decoratedResults.map((candidate) => (
-            <GeneratedMoleculeCard
-              key={candidate.smiles}
-              candidate={candidate}
-              selected={selected === candidate.smiles}
-              onSelect={(next) => setSelected(next.smiles)}
-              onCommand={() => undefined}
-            />
-          ))}
         </Box>
       </Stack>
     </Box>
   );
 }
+
+const heroSx = {
+  display: 'grid',
+  gridTemplateColumns: { xs: '1fr', md: 'minmax(0, 1fr) auto' },
+  gap: 2,
+  alignItems: 'end',
+  p: { xs: 2, md: 3 },
+  border: '1px solid rgba(255, 255, 255, 0.72)',
+  borderRadius: 2,
+  bgcolor: 'rgba(255, 255, 255, 0.72)',
+  boxShadow: '0 16px 45px rgba(20, 32, 51, 0.08)',
+  backdropFilter: 'blur(18px)',
+} as const;
+
+const heroChipSx = {
+  height: 28,
+  borderRadius: 1.2,
+  bgcolor: 'rgba(41, 88, 255, 0.08)',
+  color: 'var(--molvis-text)',
+  fontWeight: 800,
+  '& .MuiChip-icon': { fontSize: 16, color: 'var(--molvis-accent)' },
+} as const;
+
+const titleSx = {
+  color: 'var(--molvis-text)',
+  fontWeight: 950,
+  letterSpacing: 0,
+  fontSize: { xs: '2rem', md: '3rem' },
+  lineHeight: 1,
+} as const;
+
+const subtitleSx = {
+  color: 'var(--molvis-muted)',
+  maxWidth: 760,
+  mt: 1.2,
+  lineHeight: 1.6,
+} as const;
+
+const heroStatsSx = {
+  display: 'grid',
+  gridTemplateColumns: 'repeat(3, minmax(88px, 1fr))',
+  gap: 1,
+  width: { xs: '100%', md: 340 },
+  '& > div': {
+    p: 1.5,
+    border: '1px solid var(--molvis-border-soft)',
+    borderRadius: 1.5,
+    bgcolor: 'rgba(248, 250, 252, 0.78)',
+  },
+} as const;
+
+const statValueSx = {
+  color: 'var(--molvis-text)',
+  fontWeight: 950,
+  fontSize: '1.45rem',
+  lineHeight: 1,
+} as const;
+
+const statLabelSx = {
+  color: 'var(--molvis-muted)',
+  fontSize: '0.72rem',
+  fontWeight: 850,
+  textTransform: 'uppercase',
+  mt: 0.6,
+} as const;
+
+const workspaceGridSx = {
+  display: 'grid',
+  gridTemplateColumns: { xs: 'minmax(0, 1fr)', lg: 'minmax(620px, 0.98fr) minmax(390px, 0.72fr)' },
+  gap: 2.2,
+  alignItems: 'start',
+  justifyContent: 'center',
+} as const;
+
+const resultsPanelSx = {
+  p: { xs: 2, md: 2.4 },
+  border: '1px solid var(--molvis-border-soft)',
+  borderRadius: 2,
+  bgcolor: 'rgba(255, 255, 255, 0.86)',
+  boxShadow: 'var(--molvis-shadow)',
+  minHeight: { lg: 560 },
+} as const;
+
+const cardsGridSx = {
+  display: 'grid',
+  gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))',
+  gap: 1.2,
+} as const;
+
+const runningSx = {
+  p: 2,
+  mb: 1.5,
+  bgcolor: '#f7f9ff',
+  border: '1px solid rgba(41, 88, 255, 0.14)',
+  borderRadius: 1.5,
+} as const;
+
+const emptySx = {
+  display: 'grid',
+  placeItems: 'center',
+  textAlign: 'center',
+  minHeight: 360,
+  border: '1px dashed rgba(20, 32, 51, 0.18)',
+  borderRadius: 1.5,
+  bgcolor: 'rgba(248, 250, 252, 0.7)',
+  p: 3,
+} as const;
